@@ -44,7 +44,7 @@ rm -rf exa-linux-x86_64-v${EXA_VER}.zip bin completions man
 # ---
 
 # tfz
-tee ~/bin/tfz << EOF > /dev/null
+tee ~/bin/tfz << "EOF" > /dev/null
 #!/bin/bash
 
 grep_cmd="grep --recursive --line-number --invert-match --regexp '^\s*$' * 2>/dev/null"
@@ -58,6 +58,7 @@ read -r file line <<<"$(eval $grep_cmd | fzf --select-1 --exit-0 | awk -F: '{pri
 $EDITOR $file +$line
 EOF
 
-chmod 755 tfz
+chmod 755 ~/bin/tfz
 echo "export EDITOR=vim" >> ~/.bashrc
-echo bind '"\C-f":"tfz\C-m"' >> ~/.bashrc
+echo "bind '\"\C-f\":\"tfz\C-m\"'" >> ~/.bashrc
+

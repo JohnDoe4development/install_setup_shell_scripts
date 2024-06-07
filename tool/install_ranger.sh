@@ -11,7 +11,7 @@ sed -i 's/set line_numbers false/set line_numbers true/' ~/.config/ranger/rc.con
 sed -i 's/set dirname_in_tabs false/set dirname_in_tabs true/' ~/.config/ranger/rc.conf
 sed -i 's/set one_indexed false/set one_indexed true/' ~/.config/ranger/rc.conf
 
-tee -a ~/.bashrc << EOF > /dev/null
+tee -a ~/.bashrc << "EOF" > /dev/null
 # ranger settings
 [ -n "$RANGER_LEVEL" ] && PS1="$PS1"'(in ranger) '
 
