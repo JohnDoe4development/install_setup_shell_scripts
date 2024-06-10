@@ -31,7 +31,8 @@ BAT_VER=0.24.0
 wget --quiet https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat_${BAT_VER}_amd64.deb
 sudo dpkg -i bat_${BAT_VER}_amd64.deb
 rm -rf bat_${BAT_VER}_amd64.deb
-
+echo "alias cat='bat -p -P'" >> ~/.bash_aliases
+echo "" ~/.bashrc
 # ---
 
 # exa
