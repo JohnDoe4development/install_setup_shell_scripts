@@ -28,5 +28,14 @@ settitle ${USER}@${NAME}
 
 EOF
 
+# git settings for WSL
+tee -a ~/.bashrc << "EOF" > /dev/null
+PS1=${PS1::-3}'$(\__git_ps1)\$ '
+GIT_PS1_SHOWDIRTYSTATE=true
+GIT_PS1_SHOWUPSTREAM=1
+GIT_PS1_SHOWUNTRACKEDFILES=1
+GIT_PS1_SHOWSTASHSTATE=1
+EOF
+
 # ホームディレクトリの日本語フォルダを強制的に英語名フォルダに変更
 sudo -u ${USER} LANG=C xdg-user-dirs-update --force
