@@ -11,5 +11,5 @@ sudo apt install -yq \
     xdg-utils
 
 wget --quiet https://dl.google.com/linux/direct/${DEB_FILENAME} -O ${SAVE_FILENAME}
-dpkg -i ${SAVE_FILENAME}
+sudo dpkg -i ${SAVE_FILENAME}
 rm -rf ${SAVE_FILENAME}
