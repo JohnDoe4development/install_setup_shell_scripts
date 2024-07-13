@@ -2,6 +2,7 @@
 
 mkdir -p ~/bin
 mkdir -p ~/Downloads
+mkdir -p ~/.local/bin
 cd ~/Downloads
 
 # fzf
@@ -60,6 +61,7 @@ $EDITOR $file +$line
 EOF
 
 chmod 755 ~/bin/tfz
+echo 'export PATH=$PATH:~/bin:~/.local/bin' >> ~/.bashrc
 echo "export EDITOR=vim" >> ~/.bashrc
 echo "bind '\"\C-f\":\"tfz\C-m\"'" >> ~/.bashrc
 

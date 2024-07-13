@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+mkdir -p ~/bin
+mkdir -p ~/Downloads
+cd ~/Downloads
+
 mkdir -p ~/Downloads/tmp_lazygit
 pushd ~/Downloads/tmp_lazygit
 
