@@ -30,9 +30,7 @@ for arg in "$@"; do
     shift
     ;;
     *)
-    echo "無効な引数です."
-    echo "中止します."
-    exit 1
+	shift
     ;;
   esac
 done
