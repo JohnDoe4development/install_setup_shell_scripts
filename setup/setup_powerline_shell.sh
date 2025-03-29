@@ -36,7 +36,7 @@ case $1 in
   BG_NUM=172
 esac
 
-sudo apt install -y python3-pip
+sudo apt-get install -y python3-pip
 pip install powerline-shell
 
 tee -a ~/.bashrc << "EOF" > /dev/null

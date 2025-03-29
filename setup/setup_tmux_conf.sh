@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sudo apt install -y tmux ansifilter
+sudo apt-get install -y tmux ansifilter
 
 # tmux conf
 if [ ! -e ~/.tmux.conf ]; then
@@ -89,6 +89,23 @@ if [ ! -e ~/.tmux.conf ]; then
 	    tmux attach -c $(tmux display -p -F "#{pane_current_path}") -t popup || tmux new -s popup ; \
 	  fi \
 	'
+
+	# ---
+
+	# 各ペインのインデックス表示の時間を3000msに設定
+	set display-panes-time 3000
+
+	# ---
+
+	# yazi image preview
+	set -g allow-passthrough on
+	set -ga update-environment TERM
+	set -ga update-environment TERM_PROGRAM
+
+	# ---
+
+	# Ubuntu 24.04 workaround
+	set -sg escape-time 200
 
 	# ---
 

@@ -6,7 +6,7 @@ mkdir -p ~/.local/bin
 cd ~/Downloads
 
 # fzf
-sudo apt install -y fzf
+sudo apt-get install -y fzf
 echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> ~/.bashrc
 
 tee -a ~/.bashrc << EOF > /dev/null
@@ -22,26 +22,27 @@ EOF
 # ---
 
 # fd
-sudo apt install -y fd-find
+sudo apt-get install -y fd-find
 ln -s $(which fdfind) /home/${USER}/.local/bin/fd
 
 # ---
 
 # bat
-BAT_VER=0.24.0
+BAT_VER=0.25.0
 wget --quiet https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat_${BAT_VER}_amd64.deb
 sudo dpkg -i bat_${BAT_VER}_amd64.deb
 rm -rf bat_${BAT_VER}_amd64.deb
-echo "alias cat='bat -p -P'" >> ~/.bash_aliases
+echo "alias bat=\"/usr/bin/batcat\"" >> ~/.bash_aliases
 echo "" ~/.bashrc
+
 # ---
 
-# exa
-EXA_VER=0.10.1
-wget --quiet https://github.com/ogham/exa/releases/download/v${EXA_VER}/exa-linux-x86_64-v${EXA_VER}.zip
-unzip exa-linux-x86_64-v${EXA_VER}.zip
-sudo cp bin/exa /usr/local/bin/
-rm -rf exa-linux-x86_64-v${EXA_VER}.zip bin completions man
+# eza
+EZA_VER=0.20.24
+wget -q -O eza.tar.gz https://github.com/eza-community/eza/releases/download/v${EZA_VER}/eza_x86_64-unknown-linux-musl.tar.gz
+tar -zxvf eza.tar.gz
+sudo cp ./eza /usr/local/bin/
+rm -rf eza eza.tar.gz
 
 # ---
 

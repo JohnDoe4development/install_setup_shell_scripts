@@ -5,7 +5,7 @@ mkdir -p ~/Downloads
 cd ~/Downloads
 
 # vim
-sudo apt install -y vim
+sudo apt-get install -y vim
 git clone https://github.com/sickill/vim-monokai.git
 mkdir -p ~/.vim/colors
 mv vim-monokai/colors/monokai.vim ~/.vim/colors/

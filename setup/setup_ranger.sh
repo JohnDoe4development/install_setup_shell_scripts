@@ -137,7 +137,7 @@ add_fzf_select_cmd_in_ranger() {
 }
 
 # main
-sudo apt install -y ranger w3m lynx highlight atool mediainfo xpdf caca-utils
+sudo apt-get install -y ranger w3m lynx highlight atool mediainfo xpdf caca-utils
 ranger --copy-config=all
 my_custom
 add_ranger_cd

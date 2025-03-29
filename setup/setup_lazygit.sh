@@ -8,7 +8,10 @@ mkdir -p ~/Downloads/tmp_lazygit
 pushd ~/Downloads/tmp_lazygit
 
 # lazygit
-wget -O lazygit.tar.gz https://github.com/jesseduffield/lazygit/releases/download/v0.41.0/lazygit_0.41.0_Linux_x86_64.tar.gz
+LAZYGIT_VER=0.48.0
+mkdir -p ./tmp_lazygit
+pushd ./tmp_lazygit
+wget --quiet -O lazygit.tar.gz https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VER}/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz
 tar -xzf lazygit.tar.gz
 chmod +x lazygit
 mv ./lazygit ~/bin/

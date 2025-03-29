@@ -2,7 +2,7 @@
 
 DEB_FILENAME=google-chrome-stable_current_amd64.deb
 SAVE_FILENAME=google-chrome.deb
-sudo apt install -yq \
+sudo apt-get install -yq \
     wget \
     fonts-liberation \
     libnss3 \
