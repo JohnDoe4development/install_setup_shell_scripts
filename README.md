@@ -1,7 +1,7 @@
 # install_setup_shell_scripts
 
 Ubuntuでツールをインストール・セットアップするためのシェルスクリプトをまとめる。  
-Ubuntu 22.04 LTS で動作確認
+Ubuntu 24.04 LTSのx86_64(amd64)で動作確認
 
 ---
 
@@ -15,3 +15,4 @@ Ubuntu 22.04 LTS で動作確認
 - [bashで標準出力、エラーを捨てるとか、ファイルディスクリプタ #Bash - Qiita](https://qiita.com/harasakih/items/868a850fcdc99a2c37b0)
 - [シェルスクリプトに出てくる「2>&1」ってなんですか？【エラーログの保存に使えます】 - Wet系バイオインフォマティシャンの災難 (hatenablog.jp)](https://sry.hatenablog.jp/entry/2020/03/29/142630)
 - [【 wait 】コマンド――プロセスやジョブの終了を待つ：Linux基本コマンドTips（317） - ＠IT (itmedia.co.jp)](https://atmarkit.itmedia.co.jp/ait/articles/1906/28/news025.html)
+- [シェルスクリプトの関数で「戻り値」を返す方法、全部まとめ（bash/zshの新機能 関数置換･値置換の使用例） #Bash - Qiita](https://qiita.com/ko1nksm/items/2c5543744cebd4fb1e61)
