@@ -62,7 +62,13 @@ docker run --rm -d -it \
     -h verification \
     --name ${CONTAINER_NAME} ${IMG_NAME}
 
-TARGET_SCRIPT="./hello_world.sh"
-docker cp ${TARGET_SCRIPT} ${CONTAINER_NAME}:/root/
-docker exec -it ${CONTAINER_NAME} bash -c "bash ${TARGET_SCRIPT} && bash"
+scripts=(
+    "./hello_world.sh"
+)
+
+for script in "${scripts[@]}"; do
+    docker cp ${script} ${CONTAINER_NAME}:/root/
+    docker exec -it ${CONTAINER_NAME} bash -c "bash $(basename ${script}) && bash"
+done
+
 docker rm -f ${CONTAINER_NAME}
