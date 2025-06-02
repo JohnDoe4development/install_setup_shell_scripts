@@ -1,19 +1,143 @@
 #!/bin/bash
 
+SKEL_DIR=/etc/skel
+
+rc_files=(
+    ".bashrc"
+    ".bashrc_add"
+)
+
+plugins=(
+    "yazi-rs/plugins:full-border"
+    "yazi-rs/plugins:smart-enter"
+    "yazi-rs/plugins:toggle-pane"
+    "yazi-rs/plugins:chmod"
+    "dedukun/bookmarks"
+    "yazi-rs/plugins:git"
+    "yazi-rs/plugins:jump-to-char"
+    "yazi-rs/plugins:smart-filter"
+)
+
+# ---
+
 check_url() {
     curl -f --head -s $1 > /dev/null
 }
 
-sudo apt-get update
-sudo apt-get install -q -y unzip curl git
-sudo apt-get install -q -y ffmpeg 7zip poppler-utils imagemagick
+setup_fzf_bashrc() {
+    for rc_file in "${rc_files[@]}"; do
+        sudo tee -a ${SKEL_DIR}/${rc_file} <<- "EOF" > /dev/null
 
-mkdir -p ~/.config
-mkdir -p ~/.local/bin
-mkdir -p ~/.config/yazi/
+		# fzf settings
+		source /etc/fzf/conf/fzf-key-bindings.bash
+		source /etc/fzf/conf/fzf-completion.bash
+
+		EOF
+    done
+}
+
+setup_zoxide_bashrc() {
+    for rc_file in "${rc_files[@]}"; do
+        sudo tee -a ${SKEL_DIR}/${rc_file} <<- "EOF" > /dev/null
+		# zoxide settings
+		eval "$(zoxide init bash)"
+
+		EOF
+    done
+}
+
+setup_yazi_bashrc() {
+    for rc_file in "${rc_files[@]}"; do
+        sudo tee -a ${SKEL_DIR}/${rc_file} <<- "EOF" > /dev/null
+		# yazi settings
+		export SHELL=/bin/bash
+		export EDITOR=vim
+
+		function yazi_cd() {
+		    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+		    yazi "$@" --cwd-file="$tmp"
+		    if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		        builtin cd -- "$cwd"
+		    fi
+		    rm -f -- "$tmp"
+		}
+		if which yazi >& /dev/null && [[ -t 1 ]]; then
+		    bind '"\C-o":"yazi_cd\C-m"'
+		fi
+
+		function _update_ps1() {
+		    if (which powerline-shell >& /dev/null); then
+		        PS1="$(/usr/local/bin/powerline-shell $?)"
+		    fi
+		    if (which yazi >& /dev/null); then
+		        [ -n "$YAZI_LEVEL" ] && PS1="$PS1"'(in yazi[$YAZI_LEVEL]) '
+		    fi
+		}
+		if [ "$TERM" != "linux" ]; then
+		    PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
+		fi
+		EOF
+        echo >> ${SKEL_DIR}/${rc_file}
+    done
+}
+
+setup_ya_bashrc() {
+    for rc_file in "${rc_files[@]}"; do
+        sudo tee -a ${SKEL_DIR}/${rc_file} <<- EOF > /dev/null
+		plugin_dir="\${HOME}/.config/yazi/plugins"
+		if [ ! -d "\${plugin_dir}" ]; then
+		    mkdir -p \${plugin_dir}
+		$(
+		for plugin in "${plugins[@]}"; do
+		    echo "    ya pkg add ${plugin}"
+		done
+		)
+		fi
+		EOF
+        echo >> ${SKEL_DIR}/${rc_file}
+    done
+}
+
+add_vimrc() {
+    sudo tee ${SKEL_DIR}/.vimrc <<- EOF > /dev/null
+	set nu
+	" set nonu
+	set autoread
+	colorscheme monokai
+
+	" ctrl +s: save file
+	nnoremap <C-s> :w<CR>
+	inoremap <C-s> <ESC>:w<CR>
+	set mouse=a
+	set paste
+	EOF
+
+    git clone https://github.com/sickill/vim-monokai.git
+    mkdir -p ${SKEL_DIR}/.vim/colors
+    mv vim-monokai/colors/monokai.vim ${SKEL_DIR}/.vim/colors/
+    rm -rf vim-monokai
+
+    mkdir -p ~/.vim
+    rsync -av ${SKEL_DIR}/.vim ~/
+    cp ${SKEL_DIR}/.vimrc ~/
+}
+
+add_tmuxconf() {
+    cp ${SKEL_DIR}/.tmux.conf ${HOME}/
+}
+
+add_bashrc() {
+    mv ${HOME}/.bashrc ${HOME}/.bashrc.bak
+    cat ${HOME}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> ${HOME}/.bashrc
+    rm -rf ${HOME}/.bashrc.bak
+}
+
+# ---
+
+sudo apt-get update
+sudo apt-get install -q -y sudo unzip curl git vim rsync
+sudo apt-get install -q -y ffmpeg 7zip poppler-utils imagemagick
 mkdir -p ~/Downloads
-echo 'export PATH=${PATH}:~/.local/bin' >> ~/.bashrc
-echo >> ~/.bashrc
 
 # ---
 
@@ -24,7 +148,7 @@ if $(check_url "${JQ_URL}"); then
     curl -s "${JQ_URL}" -Lo ~/Downloads/jq
     pushd ~/Downloads
     chmod +x ./jq
-    mv ./jq ~/.local/bin/
+    mv ./jq /usr/local/bin/
     popd
 else
     echo "Error: jq download URL does not exist: $JQ_URL"
@@ -41,13 +165,13 @@ if $(check_url "${FD_URL}"); then
     pushd ~/Downloads
     mkdir ./fd_temp
     tar -xzf ./fd.tar.gz --strip-components=1 -C ./fd_temp
-    mv ./fd_temp/fd ~/.local/bin/
+    mv ./fd_temp/fd /usr/local/bin/
     rm -rf ./fd.tar.gz
     rm -rf ./fd_temp
     popd
 else
     echo "Error: fd download URL does not exist: ${FD_URL}"
-    # exit 1
+    exit 1
 fi
 
 # ---
@@ -60,7 +184,7 @@ if $(check_url "${RG_URL}"); then
     pushd ~/Downloads
     mkdir ./rg_temp
     tar -xzf ./rg.tar.gz --strip-components=1 -C ./rg_temp
-    mv ./rg_temp/rg ~/.local/bin/
+    mv ./rg_temp/rg /usr/local/bin/
     rm -rf ./rg.tar.gz
     rm -rf ./rg_temp
     popd
@@ -78,26 +202,24 @@ if $(check_url "${FZF_URL}"); then
     curl -s "${FZF_URL}" -Lo ~/Downloads/fzf.tar.gz
     pushd ~/Downloads
     tar -xzf ./fzf.tar.gz
-    mv ./fzf ~/.local/bin/
+    mv ./fzf /usr/local/bin/
     rm -rf ./fzf.tar.gz
+    sudo mkdir -p /etc/fzf/conf
     FZF_KEYBINDINGS_URL="https://raw.githubusercontent.com/junegunn/fzf/refs/tags/v${LATEST_FZF_VER}/shell/key-bindings.bash"
     if $(check_url "${FZF_KEYBINDINGS_URL}"); then
-        curl -s "${FZF_KEYBINDINGS_URL}" -Lo ~/.local/bin/fzf-key-bindings.bash
-        echo 'source ~/.local/bin/fzf-key-bindings.bash' >> ~/.bashrc
-        echo >> ~/.bashrc
+        sudo curl -s "${FZF_KEYBINDINGS_URL}" -Lo /etc/fzf/conf/fzf-key-bindings.bash
     else
         echo "Error: fzf key-bindings download URL does not exist: ${FZF_KEYBINDINGS_URL}"
         exit 1
     fi
     FZF_COMPLETION_BASH_URL="https://raw.githubusercontent.com/junegunn/fzf/refs/tags/v${LATEST_FZF_VER}/shell/completion.bash"
     if $(check_url "${FZF_COMPLETION_BASH_URL}"); then
-        curl -s "${FZF_COMPLETION_BASH_URL}" -Lo ~/.local/bin/fzf-completion.bash
-        echo 'source ~/.local/bin/fzf-completion.bash' >> ~/.bashrc
-        echo >> ~/.bashrc
+        curl -s "${FZF_COMPLETION_BASH_URL}" -Lo /etc/fzf/conf/fzf-completion.bash
     else
         echo "Error: fzf completion.bash download URL does not exist: ${FZF_COMPLETION_BASH_URL}"
         exit 1
     fi
+    setup_fzf_bashrc
     popd
 else
     echo "Error: fzf download URL does not exist: ${FZF_URL}"
@@ -114,8 +236,7 @@ if $(check_url "${ZOXIDE_URL}"); then
     pushd ~/Downloads
     sudo apt install -y ./zoxide.deb
     rm -rf ./zoxide.deb
-    echo 'eval "$(zoxide init bash)"' >> ~/.bashrc
-    echo >> ~/.bashrc
+    setup_zoxide_bashrc
     popd
 else
     echo "Error: zoxide download URL does not exist: ${ZOXIDE_URL}"
@@ -133,19 +254,23 @@ if $(check_url "${YAZI_URL}"); then
     unzip ./yazi.zip -d ./
     rm -rf ./yazi.zip
     mv ./yazi-x86_64-unknown-linux-musl/ ./yazi/
-    mv ./yazi/ ~/.local/bin/
-    echo 'export PATH=${PATH}:~/.local/bin/yazi' >> ~/.bashrc
+    mv ./yazi/yazi /usr/local/bin/
+    mv ./yazi/ya /usr/local/bin/
+    rm -rf ./yazi
     popd
 else
     echo "Error: yazi download URL does not exist: ${YAZI_URL}"
     exit 1
 fi
 
-# 設定ファイルとテーマをダウンロード
-git clone https://github.com/sxyazi/yazi.git ~/.config/yazi/yazi
-git clone https://github.com/yazi-rs/flavors.git ~/.config/yazi/flavors
+sudo mkdir -p /etc/yazi/config
+YAZI_CONFIG_HOME=/etc/yazi/config
 
-pushd ~/.config/yazi
+# 設定ファイルとテーマをダウンロード
+git clone https://github.com/sxyazi/yazi.git ${YAZI_CONFIG_HOME}/yazi
+git clone https://github.com/yazi-rs/flavors.git ${YAZI_CONFIG_HOME}/flavors
+
+pushd ${YAZI_CONFIG_HOME}
 
 # edit yazi.toml
 cp yazi/yazi-config/preset/yazi-default.toml ./yazi.toml
@@ -158,7 +283,7 @@ sed -i "s/arrow prev/arrow -1/g" ./keymap.toml
 sed -i "s/arrow next/arrow 1/g" ./keymap.toml
 
 # create theme.toml
-tee ./theme.toml << "EOF" > /dev/null
+sudo tee ./theme.toml << "EOF" > /dev/null
 # If the user's terminal is in dark mode, Yazi will load `theme-dark.toml` on startup; otherwise, `theme-light.toml`.
 # You can override any parts of them that are not related to the dark/light mode in your own `theme.toml`.
 
@@ -179,16 +304,11 @@ light = "catppuccin-latte"
 EOF
 
 # plugins
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:full-border
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:smart-enter
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:toggle-pane
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:chmod
-~/.local/bin/yazi/ya pack -a dedukun/bookmarks
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:git
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:jump-to-char
-~/.local/bin/yazi/ya pack -a yazi-rs/plugins:smart-filter
+for plugin in "${plugins[@]}"; do
+    /usr/local/bin/ya pkg add ${plugin}
+done
 
-tee ./init.lua <<- "EOF" > /dev/null
+sudo tee ./init.lua <<- "EOF" > /dev/null
 require("full-border"):setup()
 
 require("smart-enter"):setup {
@@ -248,7 +368,7 @@ end, 500, Status.RIGHT)
 
 EOF
 
-tee -a ./keymap.toml << "EOF" > /dev/null
+sudo tee -a ./keymap.toml << "EOF" > /dev/null
 [[mgr.prepend_keymap]]
 on   = "!"
 run  = 'shell "$SHELL" --block'
@@ -306,7 +426,7 @@ desc = "Smart filter"
 
 EOF
 
-tee -a ./yazi.toml << EOF > /dev/null
+sudo tee -a ./yazi.toml << EOF > /dev/null
 
 [[plugin.prepend_fetchers]]
 id   = "git"
@@ -323,7 +443,7 @@ EOF
 # ---
 
 mkdir -p ./plugins/smart-tab.yazi
-tee ./plugins/smart-tab.yazi/main.lua << EOF > /dev/null
+sudo tee ./plugins/smart-tab.yazi/main.lua << EOF > /dev/null
 --- @sync entry
 return {
 	entry = function()
@@ -333,7 +453,7 @@ return {
 }
 EOF
 
-tee -a ./keymap.toml << "EOF" > /dev/null
+sudo tee -a ./keymap.toml << "EOF" > /dev/null
 [[mgr.prepend_keymap]]
 on   = "t"
 run  = "plugin smart-tab"
@@ -343,7 +463,7 @@ EOF
 # ---
 
 mkdir -p ./plugins/smart-switch.yazi
-tee ./plugins/smart-switch.yazi/main.lua << EOF > /dev/null
+sudo tee ./plugins/smart-switch.yazi/main.lua << EOF > /dev/null
 --- @sync entry
 local function entry(_, job)
 	local cur = cx.active.current
@@ -359,7 +479,7 @@ end
 return { entry = entry }
 EOF
 
-tee -a ./keymap.toml << "EOF" > /dev/null
+sudo tee -a ./keymap.toml << "EOF" > /dev/null
 [[mgr.prepend_keymap]]
 on   = "2"
 run  = "plugin smart-switch 1"
@@ -377,7 +497,8 @@ popd
 # ---
 
 # edit ~/.tmux.conf
-tee ~/.tmux.conf << EOF > /dev/null
+sudo tee -a ${SKEL_DIR}/.tmux.conf << EOF > /dev/null
+
 set -g allow-passthrough on
 set -ga update-environment TERM
 set -ga update-environment TERM_PROGRAM
@@ -386,35 +507,32 @@ EOF
 
 # ---
 
-# edit ~/.bashrc
-tee -a ~/.bashrc << "EOF" > /dev/null
+setup_yazi_bashrc
+setup_ya_bashrc
+rsync -av /etc/yazi/config/ ${HOME}/.config/yazi
+chown -R $(whoami):$(whoami) ${HOME}/.config
 
-# yazi settings
-function yazi_cd() {
-    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
-    yazi "$@" --cwd-file="$tmp"
-    if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-        builtin cd -- "$cwd"
-    fi
-    rm -f -- "$tmp"
-}
-if which yazi >& /dev/null && [[ -t 1 ]]; then
-    bind '"\C-o":"yazi_cd\C-m"'
-fi
+add_vimrc
+add_tmuxconf
+add_bashrc
 
-function _update_ps1() {
-    if (which powerline-shell >& /dev/null); then
-        PS1="$(~/.local/bin/powerline-shell $?)"
-    fi
-    if (which yazi >& /dev/null); then
-        [ -n "$YAZI_LEVEL" ] && PS1="$PS1"'(in yazi[$YAZI_LEVEL]) '
-    fi
-}
-if [ "$TERM" != "linux" ]; then
-    PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
-fi
-EOF
+for username in $(ls /home); do
+    mkdir -p /home/${username}/.config
+    rsync -av /etc/yazi/config/ /home/${username}/.config/yazi
+    rsync -av ~/.config/yazi/plugins /home/${username}/.config/yazi
+    chown -R ${username}:${username} /home/${username}/.config
 
-echo "export SHELL=/bin/bash" >> ~/.bashrc
-echo "export EDITOR=vim" >> ~/.bashrc
-echo >> ~/.bashrc
+    mkdir -p /home/${username}/.vim
+    rsync -av ${SKEL_DIR}/.vim /home/${username}/
+    chown -R ${username}:${username} /home/${username}/.vim
+    cp ${SKEL_DIR}/.vimrc /home/${username}/
+    chown -R ${username}:${username} /home/${username}/.vimrc
+
+    cp ${SKEL_DIR}/.tmux.conf /home/${username}/
+    chown -R ${username}:${username} /home/${username}/.tmux.conf
+
+    mv /home/${username}/.bashrc /home/${username}/.bashrc.bak
+    cat /home/${username}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> /home/${username}/.bashrc
+    chown -R ${username}:${username} /home/${username}/.bashrc
+    rm -rf /home/${username}/.bashrc.bak
+done
