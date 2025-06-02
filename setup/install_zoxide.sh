@@ -10,7 +10,7 @@ ZOXIDE_URL="https://github.com/ajeetdsouza/zoxide/releases/download/v${LATEST_ZO
 if $(check_url "${ZOXIDE_URL}"); then
     curl -s "${ZOXIDE_URL}" -Lo ~/Downloads/zoxide.deb
     pushd ~/Downloads
-    apt install -y ./zoxide.deb
+    sudo apt install -y ./zoxide.deb
     rm -rf ./zoxide.deb
     echo 'eval "$(zoxide init bash)"' >> ~/.bashrc
     echo >> ~/.bashrc

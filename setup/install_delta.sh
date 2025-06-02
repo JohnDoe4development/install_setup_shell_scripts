@@ -22,7 +22,7 @@ TARGET_URL="https://github.com/${TARGET_REPO}/releases/download/${LATEST_VER}/${
 if $(check_url "${TARGET_URL}"); then
     curl -s "${TARGET_URL}" -Lo ~/Downloads/${TARGET_NAME}.deb
     pushd ~/Downloads
-    apt install -y ./${TARGET_NAME}.deb
+    sudo apt install -y ./${TARGET_NAME}.deb
     rm -rf ./${TARGET_NAME}.deb
     popd
 else

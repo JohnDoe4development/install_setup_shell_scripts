@@ -4,8 +4,8 @@ check_url() {
     curl -f --head -s $1 > /dev/null
 }
 
-apt-get update
-apt-get install -q -y curl git
+sudo apt-get update
+sudo apt-get install -q -y curl git
 
 mkdir -p ~/Downloads
 mkdir -p ~/.local/bin
