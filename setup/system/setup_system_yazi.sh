@@ -18,7 +18,7 @@ plugins=(
     "yazi-rs/plugins:smart-filter"
 )
 
-# ---
+# ---f
 
 check_url() {
     curl -f --head -s $1 > /dev/null
@@ -516,23 +516,29 @@ add_vimrc
 add_tmuxconf
 add_bashrc
 
-for username in $(ls /home); do
-    mkdir -p /home/${username}/.config
-    rsync -av /etc/yazi/config/ /home/${username}/.config/yazi
-    rsync -av ~/.config/yazi/plugins /home/${username}/.config/yazi
-    chown -R ${username}:${username} /home/${username}/.config
+for username in $(ls /home) root; do
+    if [ "$username" = "root" ]; then
+        home_dir="/root"
+    else
+        home_dir="/home/${username}"
+    fi
 
-    mkdir -p /home/${username}/.vim
-    rsync -av ${SKEL_DIR}/.vim /home/${username}/
-    chown -R ${username}:${username} /home/${username}/.vim
-    cp ${SKEL_DIR}/.vimrc /home/${username}/
-    chown -R ${username}:${username} /home/${username}/.vimrc
+    mkdir -p ${home_dir}/.config
+    rsync -av /etc/yazi/config/ ${home_dir}/.config/yazi
+    rsync -av ~/.config/yazi/plugins ${home_dir}/.config/yazi
+    chown -R ${username}:${username} ${home_dir}/.config
 
-    cp ${SKEL_DIR}/.tmux.conf /home/${username}/
-    chown -R ${username}:${username} /home/${username}/.tmux.conf
+    mkdir -p ${home_dir}/.vim
+    rsync -av ${SKEL_DIR}/.vim ${home_dir}/
+    chown -R ${username}:${username} ${home_dir}/.vim
+    cp ${SKEL_DIR}/.vimrc ${home_dir}/
+    chown -R ${username}:${username} ${home_dir}/.vimrc
 
-    mv /home/${username}/.bashrc /home/${username}/.bashrc.bak
-    cat /home/${username}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> /home/${username}/.bashrc
-    chown -R ${username}:${username} /home/${username}/.bashrc
-    rm -rf /home/${username}/.bashrc.bak
+    cp ${SKEL_DIR}/.tmux.conf ${home_dir}/
+    chown -R ${username}:${username} ${home_dir}/.tmux.conf
+
+    mv ${home_dir}/.bashrc ${home_dir}/.bashrc.bak
+    cat ${home_dir}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> ${home_dir}/.bashrc
+    chown -R ${username}:${username} ${home_dir}/.bashrc
+    rm -rf ${home_dir}/.bashrc.bak
 done

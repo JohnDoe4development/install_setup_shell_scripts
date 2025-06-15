@@ -176,15 +176,21 @@ chmod 755 /usr/local/bin/tfz
 setup_fzf_bashrc
 add_vimrc
 
-for username in $(ls /home); do
-    mkdir -p /home/${username}/.vim
-    rsync -av ${SKEL_DIR}/.vim /home/${username}/
-    chown -R ${username}:${username} /home/${username}/.vim
-    cp ${SKEL_DIR}/.vimrc /home/${username}/
-    chown -R ${username}:${username} /home/${username}/.vimrc
+for username in $(ls /home) root; do
+    if [ "$username" = "root" ]; then
+        home_dir="/root"
+    else
+        home_dir="/home/${username}"
+    fi
 
-    mv /home/${username}/.bashrc /home/${username}/.bashrc.bak
-    cat /home/${username}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> /home/${username}/.bashrc
-    chown -R ${username}:${username} /home/${username}/.bashrc
-    rm -rf /home/${username}/.bashrc.bak
+    mkdir -p ${home_dir}/.vim
+    rsync -av ${SKEL_DIR}/.vim ${home_dir}/
+    chown -R ${username}:${username} ${home_dir}/.vim
+    cp ${SKEL_DIR}/.vimrc ${home_dir}/
+    chown -R ${username}:${username} ${home_dir}/.vimrc
+
+    mv ${home_dir}/.bashrc ${home_dir}/.bashrc.bak
+    cat ${home_dir}/.bashrc.bak ${SKEL_DIR}/.bashrc_add >> ${home_dir}/.bashrc
+    chown -R ${username}:${username} ${home_dir}/.bashrc
+    rm -rf ${home_dir}/.bashrc.bak
 done
