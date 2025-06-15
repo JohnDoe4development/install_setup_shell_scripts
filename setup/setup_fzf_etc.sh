@@ -20,7 +20,7 @@ setup_fzf_bashrc() {
 
 	export PATH=${PATH}:~/.local/bin
 	export EDITOR=vim
-	bind '\"\C-f\":\"tfz\C-m\"'
+	bind '"\C-f":"tfz\C-m"'
 
 	EOF
 }

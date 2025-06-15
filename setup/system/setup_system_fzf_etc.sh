@@ -29,7 +29,7 @@ setup_fzf_bashrc() {
 		export FZF_ALT_C_COMMAND="fd --type d -H -E .git"
 
 		export EDITOR=vim
-		bind '\"\C-f\":\"tfz\C-m\"'
+		bind '"\C-f":"tfz\C-m"'
 
 		EOF
     done
