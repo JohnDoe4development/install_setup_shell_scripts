@@ -10,6 +10,7 @@ setup_fzf_bashrc() {
 	# fzf settings
 	source /etc/fzf/conf/fzf-key-bindings.bash
 	source /etc/fzf/conf/fzf-completion.bash
+	export FZF_TMUX_OPTS="-p 80%"
 
 	export FZF_DEFAULT_OPTS="--ansi -e --prompt='QUERY> ' --layout=reverse --border=rounded --height 100%"
 	export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=header,grid --line-range :100 {}'"
@@ -55,6 +56,13 @@ if $(check_url "${FZF_URL}"); then
         sudo curl -s "${FZF_COMPLETION_BASH_URL}" -Lo /etc/fzf/conf/fzf-completion.bash
     else
         echo "Error: fzf completion.bash download URL does not exist: ${FZF_COMPLETION_BASH_URL}"
+        exit 1
+    fi
+    FZF_TMUX_URL="https://raw.githubusercontent.com/junegunn/fzf/refs/tags/v${LATEST_FZF_VER}/bin/fzf-tmux"
+    if $(check_url "${FZF_TMUX_URL}"); then
+        sudo curl -s "${FZF_TMUX_URL}" -Lo /usr/local/bin/fzf-tmux
+    else
+        echo "Error: fzf-tmux download URL does not exist: ${FZF_COMPLETION_BASH_URL}"
         exit 1
     fi
     popd
